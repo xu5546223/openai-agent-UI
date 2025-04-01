@@ -1,103 +1,107 @@
-import Image from "next/image";
+'use client'; // 因為使用了 state 和事件處理，需要標記為 Client Component
+
+import React, { useState } from 'react';
+import ComponentSidebar from "@/components/ComponentSidebar";
+import WorkflowCanvas from "../WorkflowCanvas";
+import PropertiesPanel from "@/components/PropertiesPanel";
+import { Button } from '@/components/ui/button'; // 引入 Button
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog"; // 引入 Dialog 相關元件
+import CustomLLMProviderList from '../components/settings/CustomLLMProviderList'; // 引入列表元件
+import CustomLLMProviderForm from '../components/settings/CustomLLMProviderForm'; // 引入表單元件
+import useWorkflowStore, { CustomLLMProvider } from '../store/workflowStore'; // 引入 Store 和類型
+import { Settings } from 'lucide-react'; // 引入圖示
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list');
+  const [editingProvider, setEditingProvider] = useState<CustomLLMProvider | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+  const { addCustomLLMProvider, updateCustomLLMProvider } = useWorkflowStore();
+
+  const handleOpenDialog = () => {
+    setViewMode('list'); // 每次打開時重設為列表視圖
+    setEditingProvider(null);
+    setIsSettingsOpen(true);
+  };
+
+  const handleAdd = () => {
+    setEditingProvider(null);
+    setViewMode('form');
+  };
+
+  const handleEdit = (provider: CustomLLMProvider) => {
+    setEditingProvider(provider);
+    setViewMode('form');
+  };
+
+  const handleCancel = () => {
+    setViewMode('list');
+    setEditingProvider(null);
+  };
+
+  const handleSave = (providerData: Omit<CustomLLMProvider, 'id'> | CustomLLMProvider) => {
+    if ('id' in providerData && providerData.id) {
+      // 編輯模式 - 確保 id 存在且有效
+      updateCustomLLMProvider(providerData.id, providerData);
+    } else {
+      // 新增模式
+      addCustomLLMProvider(providerData as Omit<CustomLLMProvider, 'id'>);
+    }
+    setViewMode('list'); // 儲存後返回列表
+    setEditingProvider(null);
+  };
+
+
+  return (
+    <div className="flex flex-col h-screen">
+      {/* 簡單的標頭區域 */}
+      <header className="flex items-center justify-between p-2 border-b bg-background">
+        <h1 className="text-lg font-semibold">OpenAI Agents Visual Designer</h1>
+        <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="icon" onClick={handleOpenDialog}>
+              <Settings className="h-4 w-4" />
+              <span className="sr-only">開啟設定</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>
+                {viewMode === 'list'
+                  ? '管理自訂 LLM 提供者'
+                  : editingProvider
+                  ? '編輯自訂 LLM 提供者'
+                  : '新增自訂 LLM 提供者'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="pt-4">
+              {viewMode === 'list' ? (
+                <CustomLLMProviderList onAdd={handleAdd} onEdit={handleEdit} />
+              ) : (
+                <CustomLLMProviderForm
+                  provider={editingProvider}
+                  onSave={handleSave}
+                  onCancel={handleCancel}
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </header>
+
+      {/* 主要版面配置 */}
+      <main className="main-layout flex-grow">
+        <ComponentSidebar />
+        <WorkflowCanvas />
+        <PropertiesPanel />
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
-}
+} 
