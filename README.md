@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+[English](./README.en.md)
 
-## Getting Started
+# OpenAI Agents Visual Designer
 
-First, run the development server:
+這是一個基於 OpenAI Agents 框架的視覺化設計工具，讓你可以通過簡單的拖拽操作來設計和配置 AI 代理。
 
+## 功能特點
+
+- 🎨 直觀的拖拽式介面
+- 🔄 支援 OpenAI Agents 框架
+- 📊 視覺化流程設計
+- 🎯 即時預覽
+- 🛠️ 豐富的組件庫
+
+## 技術棧
+
+- Next.js 15
+- React 19
+- React Flow
+- Tailwind CSS
+- TypeScript
+- Zustand (狀態管理)
+
+## 安裝
+
+1. 克隆專案：
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/xu5546223/openai-agent-UI.git
+cd openai-agent-UI
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. 安裝依賴：
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. 啟動開發服務器：
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 使用說明
 
-## Learn More
+1. 打開瀏覽器訪問 `http://localhost:3000`
+2. 從左側組件庫拖拽需要的組件到畫布
+3. 配置組件參數
+4. 連接組件建立流程
+5. 預覽和測試你的設計
 
-To learn more about Next.js, take a look at the following resources:
+## 如何創建 Agent (基礎教學)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+本教學將引導你使用視覺化設計器創建一個基礎的 Agent 流程。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**1. 添加節點 (Nodes)**
 
-## Deploy on Vercel
+   - 從介面左側的「節點庫」中，拖拽你需要的節點到中間的畫布上。例如，你可以拖拽一個 `Agent` 節點和一個 `Handoff` 節點。
+   - `Agent` 節點代表一個獨立的 AI 代理，負責處理特定任務。
+   - `Handoff` 節點用於在不同的 Agent 之間轉移控制權。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**2. 設置節點參數**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   - 點擊畫布上的節點，右側會出現該節點的參數配置面板。
+   - **對於 `Agent` 節點：**
+     - `Name`: 給你的 Agent 取一個獨特的名字。
+     - `Instructions`: 輸入給予該 Agent 的指示或系統提示 (System Prompt)，告訴它該如何行動。
+     - `Model`: 選擇要使用的 LLM 模型 (例如 `gpt-4o`)。
+     - (其他參數如 `Tools`, `MCP Servers` 等在目前版本中可能尚未完全支援視覺化配置，但可以在生成的程式碼中添加)
+   - **對於 `Handoff` 節點：**
+     - 通常你需要指定要 Handoff (移交) 給哪個目標 `Agent`。在目前的視覺化介面中，這通常是通過連接線來實現的 (見下一步)。你可能需要設置觸發 Handoff 的條件或名稱，這依賴於具體的節點實現。
+
+**3. 連接節點**
+
+   - 節點通常有輸入端點 (左側或上方) 和輸出端點 (右側或下方)。
+   - 從一個節點的輸出端點拖拽一條線到另一個節點的輸入端點，建立它們之間的流程關係。
+   - 例如，你可以將一個主 `Agent` 的輸出連接到一個 `Handoff` 節點，再將 `Handoff` 節點連接到另一個專門處理特定任務的 `Agent`。
+   - 這條連接線代表了控制流程的走向，或者在 Handoff 的情況下，代表了可以移交的目標。
+
+**4. 預覽與生成程式碼 (概念)**
+
+   - (目前視覺化工具的核心是輔助設計流程，實際運行可能仍需依賴生成的 Python 程式碼)
+   - 設計完成後，通常會有一個功能 (可能尚未完全實現) 可以將你的視覺化設計轉換成 OpenAI Agents SDK 的 Python 程式碼。
+   - 你可以在生成的程式碼基礎上，進一步添加 Tools、配置 MCP Server 或進行更細緻的調整。
+
+**重要提醒：**
+
+   - 這是一個非常基礎的教學，僅涵蓋了目前視覺化工具已實現的部分核心功能。
+   - 隨著專案的發展，節點類型、參數和連接方式可能會發生變化。
+   
+
+## 注意事項
+
+⚠️ **重要提示**：這是 Vibe Code 的實驗性產物，可能存在以下問題：
+
+- 部分功能可能不穩定
+- 可能存在未知的錯誤
+- 介面可能需要優化
+- 文檔可能不完整
+- **目前 UI 仍有許多待解決的問題。**
+- **版面佈局問題：** 如果遇到版面顯示不完整或跑掉的情況，請嘗試將瀏覽器縮放比例調整至 **80%**。這是一個暫時的解決方法，我們會在後續版本中進行優化。請理解這仍是一個實驗性項目。
+
+**目前已實現的核心功能：**
+
+- Agent 創建
+- MCP (Multi-Controller Process) Server 交互
+- Handoff 流程
+- 在設定頁面配置自訂 LLM API Key
+
+**許多功能尚未完善，例如：**
+
+- Tool 的使用與配置
+- 更複雜的流程設計支援
+- 流程匯入/匯出功能
+
+### 如何配置 API Key
+
+為了讓 Agent 能夠與大型語言模型 (LLM) 互動，你需要配置你的 API Key：
+
+1.  點擊介面**左上角**的「設定」按鈕。
+2.  在設定彈窗中，找到 API Key 輸入欄位。
+3.  輸入你的 OpenAI API Key。
+    > **注意**：目前可能僅支援標準 OpenAI API Key 的格式 或兼容 OpenAI API 格式的密鑰。其他服務的 Key 可能無法正常使用。
+4.  點擊「儲存」或關閉彈窗即可。
+
+> 注意：你的 API Key 將儲存在瀏覽器的本地儲存空間中，不會上傳到任何伺服器。
+
+我們歡迎社區的參與和貢獻：
+
+- 如果你發現任何問題，請提交 Issue
+- 如果你有改進建議，歡迎提交 Pull Request
+- 如果你願意參與開發，我們非常歡迎
+
+## 授權
+
+本專案採用 MIT 授權 - 查看 [LICENSE](LICENSE) 文件了解詳情
+
+## 致謝
+
+- OpenAI Agents 框架
+- React Flow 團隊
+- 所有貢獻者
+
+## 貢獻指南
